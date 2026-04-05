@@ -1,5 +1,7 @@
 #!/bin/bash
 # pre-push: sync marketplace.json sha to HEAD before pushing
+# Strategy: update sha to point to the sync commit itself (self-referential),
+# achieved by committing, then amending with the final SHA.
 
 MARKETPLACE=".claude-plugin/marketplace.json"
 [ -f "$MARKETPLACE" ] || exit 0
@@ -17,6 +19,7 @@ except Exception:
 
 [ "$CURRENT" = "$SHA" ] && exit 0
 
+# First pass: store current HEAD sha and commit
 python3 -c "
 import json
 with open('$MARKETPLACE') as f:
@@ -29,3 +32,17 @@ with open('$MARKETPLACE', 'w') as f:
 
 git add "$MARKETPLACE"
 git commit --no-verify -m "chore: sync marketplace sha to HEAD"
+
+# Second pass: update sha to point to the sync commit itself
+NEW_SHA=$(git rev-parse HEAD)
+python3 -c "
+import json
+with open('$MARKETPLACE') as f:
+  d = json.load(f)
+d['plugins'][0]['source']['sha'] = '$NEW_SHA'
+with open('$MARKETPLACE', 'w') as f:
+  json.dump(d, f, indent=2, ensure_ascii=False)
+  f.write('\n')
+"
+git add "$MARKETPLACE"
+git commit --no-verify --amend --no-edit
