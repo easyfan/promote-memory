@@ -1,10 +1,12 @@
 #!/bin/bash
 # pre-push: sync marketplace.json sha to HEAD before pushing
-# Strategy: update sha to point to the sync commit itself (self-referential),
-# achieved by committing, then amending with the final SHA.
+# After committing the sync, amend marketplace.json to point to the sync commit SHA.
+# Uses a sentinel file to prevent recursive triggering during the amend.
 
 MARKETPLACE=".claude-plugin/marketplace.json"
+SENTINEL=".git/.sha-sync-in-progress"
 [ -f "$MARKETPLACE" ] || exit 0
+[ -f "$SENTINEL" ] && exit 0  # already in sync loop, skip
 
 SHA=$(git rev-parse HEAD)
 
@@ -19,7 +21,11 @@ except Exception:
 
 [ "$CURRENT" = "$SHA" ] && exit 0
 
-# First pass: store current HEAD sha and commit
+# Create sentinel to prevent re-entry
+touch "$SENTINEL"
+trap 'rm -f "$SENTINEL"' EXIT
+
+# Write SHA of current HEAD into marketplace.json and commit
 python3 -c "
 import json
 with open('$MARKETPLACE') as f:
@@ -29,17 +35,16 @@ with open('$MARKETPLACE', 'w') as f:
   json.dump(d, f, indent=2, ensure_ascii=False)
   f.write('\n')
 "
-
 git add "$MARKETPLACE"
 git commit --no-verify -m "chore: sync marketplace sha to HEAD"
 
-# Second pass: update sha to point to the sync commit itself
-NEW_SHA=$(git rev-parse HEAD)
+# Update marketplace.json to point to the sync commit itself
+SYNC_SHA=$(git rev-parse HEAD)
 python3 -c "
 import json
 with open('$MARKETPLACE') as f:
   d = json.load(f)
-d['plugins'][0]['source']['sha'] = '$NEW_SHA'
+d['plugins'][0]['source']['sha'] = '$SYNC_SHA'
 with open('$MARKETPLACE', 'w') as f:
   json.dump(d, f, indent=2, ensure_ascii=False)
   f.write('\n')
