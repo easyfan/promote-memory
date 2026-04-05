@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "promote-memory",
+  "description": "Memory promotion tool for Claude Code — upgrades errors.md and learnings.md entries to permanent memory",
+  "owner": {
+    "name": "easyfan",
+    "email": "zhengfan@apache.org"
+  },
+  "plugins": [
+    {
+      "name": "promote-memory",
+      "description": "1 command + 1 agent (/promote-memory). Scans project memory/errors.md and memory/learnings.md, promotes qualifying status:new entries to permanent memory (MEMORY.md or ~/.claude/CLAUDE.md). Supports dry-run and custom install target.",
+      "category": "workflow",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/easyfan/promote-memory.git",
+        "sha": "PLACEHOLDER"
+      },
+      "homepage": "https://github.com/easyfan/promote-memory"
+    }
+  ]
+}
