@@ -1,4 +1,4 @@
-[English](README.md) | [中文](README-CN.md)
+[English](README.md) | [Chinese](README-CN.md)
 
 # promote-memory
 
@@ -22,28 +22,28 @@ No arguments. Automatically scans the current project's memory directory.
 
 | Source | Condition |
 |--------|-----------|
-| `errors.md` | `status:new` + both "根因" and "解决方案" fields filled; or same error pattern appears ≥2 times |
-| `learnings.md` | `status:new` + both "内容" and "适用场景" fields filled; or entry is ≥7 days old with both fields filled |
+| `errors.md` | `status:new` + both "root cause" and "solution" fields filled; or same error pattern appears ≥2 times |
+| `learnings.md` | `status:new` + both "content" and "applicable context" fields filled; or entry is ≥7 days old with both fields filled |
 
 **Target selection:**
 
 | Entry type | Target |
 |------------|--------|
 | Project-specific (contains project path, name, or tech stack) | `MEMORY.md` in project memory dir |
-| General (keywords: "所有项目", "通用", "任意项目") | `~/.claude/CLAUDE.md` |
+| General (keywords: "all projects", "universal", "any project") | `~/.claude/CLAUDE.md` |
 | Undetermined | `MEMORY.md` (conservative default) |
 
 **Step 3 — Show report**:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Memory Promotion 完成
+✅ Memory Promotion complete
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-已 promote 到 ~/.claude/CLAUDE.md：X 条
-已 promote 到 MEMORY.md：Y 条
-跳过（不满足条件）：Z 条
+Promoted to ~/.claude/CLAUDE.md: X entries
+Promoted to MEMORY.md:           Y entries
+Skipped (criteria not met):      Z entries
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-详细记录：<SCRATCH_DIR>/promotion_report.md
+Full log: <SCRATCH_DIR>/promotion_report.md
 ```
 
 Promoted entries are marked `status:promoted` in the source file and kept for audit. A separate memory file per entry is written into `memory/errors/` or `memory/learnings/`.
@@ -85,7 +85,7 @@ cp agents/memory-promoter.md  ~/.claude/agents/
 ## Usage tips
 
 - **When to run**: every 3–5 work sessions; or when `errors.md` has ≥5 `status:new` entries; or the same error appears ≥2 times
-- **Before running**: fill in "根因" and "解决方案" fields manually for `status:new` errors — entries missing these fields will be skipped
+- **Before running**: fill in the "root cause" and "solution" fields manually for `status:new` errors — entries missing these fields will be skipped
 - **Concurrency**: avoid running in multiple projects simultaneously — concurrent writes to `~/.claude/CLAUDE.md` may lose data
 
 ---
@@ -132,7 +132,7 @@ promote-memory/
 | 1 | Both errors.md and learnings.md present, entries complete | Both files promoted, report shows counts |
 | 2 | Only errors.md present (learnings.md missing) | Promotes errors only, no crash on missing file |
 | 3 | Single complete error entry | Promoted count > 0, target file mentioned |
-| 4 | Incomplete entry (missing "解决方案") | Entry skipped, report shows skip reason |
+| 4 | Incomplete entry (missing "solution" field) | Entry skipped, report shows skip reason |
 | 5 | errors.md already promoted, fresh learnings entry | Only learnings promoted, errors correctly skipped |
 
 ---

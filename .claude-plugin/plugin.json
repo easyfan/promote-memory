@@ -2,8 +2,6 @@
   "name": "promote-memory",
   "version": "1.0.0",
   "description": "Memory promotion tool for Claude Code — upgrades errors.md and learnings.md entries to permanent memory",
-  "commands": ["promote-memory"],
-  "agents": ["memory-promoter"],
   "author": {
     "name": "easyfan",
     "email": "zhengfan@apache.org"

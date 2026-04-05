@@ -1,4 +1,5 @@
 ---
+description: Memory promotion agent — reads errors.md and learnings.md, evaluates each status:new entry against promotion criteria, and writes qualifying entries to MEMORY.md or CLAUDE.md. Called by /promote-memory command.
 model: sonnet
 isolation: none
 allowed-tools: ["Read", "Write", "Bash"]
