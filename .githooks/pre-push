@@ -1,14 +1,18 @@
 #!/bin/bash
-# pre-push: sync marketplace.json sha to HEAD before pushing
-# After committing the sync, amend marketplace.json to point to the sync commit SHA.
-# Uses a sentinel file to prevent recursive triggering during the amend.
+# pre-push: sync marketplace.json sha to the tip commit being pushed.
+# Reads the remote ref from stdin to know what's being pushed.
+# If marketplace.json is already up-to-date with what's being pushed, skip.
 
 MARKETPLACE=".claude-plugin/marketplace.json"
-SENTINEL=".git/.sha-sync-in-progress"
 [ -f "$MARKETPLACE" ] || exit 0
-[ -f "$SENTINEL" ] && exit 0  # already in sync loop, skip
 
-SHA=$(git rev-parse HEAD)
+# Read the push refs from stdin (format: local_ref local_sha remote_ref remote_sha)
+# We want the local_sha (what we're pushing up to).
+PUSH_SHA=""
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+  [ -n "$local_sha" ] && PUSH_SHA="$local_sha"
+done
+[ -z "$PUSH_SHA" ] && exit 0
 
 CURRENT=$(python3 -c "
 import json, sys
@@ -19,35 +23,21 @@ except Exception:
   print('')
 " 2>/dev/null)
 
-[ "$CURRENT" = "$SHA" ] && exit 0
+[ "$CURRENT" = "$PUSH_SHA" ] && exit 0
 
-# Create sentinel to prevent re-entry
-touch "$SENTINEL"
-trap 'rm -f "$SENTINEL"' EXIT
-
-# Write SHA of current HEAD into marketplace.json and commit
 python3 -c "
 import json
 with open('$MARKETPLACE') as f:
   d = json.load(f)
-d['plugins'][0]['source']['sha'] = '$SHA'
+d['plugins'][0]['source']['sha'] = '$PUSH_SHA'
 with open('$MARKETPLACE', 'w') as f:
   json.dump(d, f, indent=2, ensure_ascii=False)
   f.write('\n')
 "
+
 git add "$MARKETPLACE"
 git commit --no-verify -m "chore: sync marketplace sha to HEAD"
 
-# Update marketplace.json to point to the sync commit itself
-SYNC_SHA=$(git rev-parse HEAD)
-python3 -c "
-import json
-with open('$MARKETPLACE') as f:
-  d = json.load(f)
-d['plugins'][0]['source']['sha'] = '$SYNC_SHA'
-with open('$MARKETPLACE', 'w') as f:
-  json.dump(d, f, indent=2, ensure_ascii=False)
-  f.write('\n')
-"
-git add "$MARKETPLACE"
-git commit --no-verify --amend --no-edit
+# The sync commit will be picked up in the NEXT push.
+# This is intentional: the sync commit is a no-op from plugin perspective
+# since it only changes marketplace.json (not installed files).
