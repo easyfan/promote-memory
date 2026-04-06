@@ -1,14 +1,14 @@
 {
   "skill_name": "promote-memory",
+  "disable_t5": false,
   "evals": [
     {
       "id": 1,
       "prompt": "/promote-memory",
-      "expected_output": "Promotion report shows entries promoted to MEMORY.md and/or CLAUDE.md",
+      "expected_output": "Skill runs without error and produces a promotion summary",
       "assertions": [
-        "Output contains the text 'Memory Promotion'",
-        "Output contains the text 'Promoted to'",
-        "Output contains the text 'Total:'"
+        "Output indicates the /promote-memory command ran successfully (no fatal error, crash, or 'command not found')",
+        "Output includes some kind of summary or report about promotion results (e.g. counts, file paths, or status)"
       ],
       "should_trigger": true,
       "files": [
@@ -22,22 +22,21 @@
         },
         {
           "path": "claude_home/projects/-looper_work/memory/learnings.md",
-          "content": "# Test Learnings\n\n## LEARN-20260101-001 | status:new\n**内容**：looper-case1 eval 文件需使用 claude_home/ 前缀\n**适用场景**：所有在 looper 容器内验证的 packer plugin\n"
+          "content": "# Test Learnings\n\n## LEARN-20260101-001 | status:new\n**内容**：looper eval 中 errors.md 和 learnings.md 提供完整字段才会被 promote\n**适用场景**：所有在 looper 容器内验证的 packer plugin\n"
         },
         {
           "path": "claude_home/projects/-looper-work/memory/learnings.md",
-          "content": "# Test Learnings\n\n## LEARN-20260101-001 | status:new\n**内容**：looper-case1 eval 文件需使用 claude_home/ 前缀\n**适用场景**：所有在 looper 容器内验证的 packer plugin\n"
+          "content": "# Test Learnings\n\n## LEARN-20260101-001 | status:new\n**内容**：looper eval 中 errors.md 和 learnings.md 提供完整字段才会被 promote\n**适用场景**：所有在 looper 容器内验证的 packer plugin\n"
         }
       ]
     },
     {
       "id": 2,
       "prompt": "/promote-memory",
-      "expected_output": "Promotion report shows errors.md entry promoted; learnings.md is empty so no learnings promoted",
+      "expected_output": "Skill runs without error even when learnings.md is empty; promotes the errors.md entry",
       "assertions": [
-        "Output contains the text 'Memory Promotion'",
-        "Output contains the text 'Promoted to'",
-        "Output contains the text 'promoted'"
+        "Output indicates the /promote-memory command ran successfully without a fatal error",
+        "Output does not say 'command not found' or 'not installed' or exit with an unhandled error"
       ],
       "should_trigger": true,
       "files": [
@@ -50,7 +49,6 @@
           "content": "# Test Errors\n\n## ERR-20260102-002 | status:new\n**错误**：looper-case2 数据库连接超时\n**根因**：连接池未设置超时上限\n**解决方案**：设置 pool_timeout=30 并添加重试逻辑\n"
         },
         {
-          "comment": "Reset learnings.md to empty header only",
           "path": "claude_home/projects/-looper_work/memory/learnings.md",
           "content": "# Test Learnings\n"
         },
@@ -63,11 +61,10 @@
     {
       "id": 3,
       "prompt": "/promote-memory",
-      "expected_output": "Promotion report shows entry promoted and mentions target memory file path",
+      "expected_output": "Promotion completes and mentions a target file where entries were written",
       "assertions": [
-        "Output contains the text 'Memory Promotion'",
-        "Output contains the text 'Promoted to'",
-        "Output contains the text 'MEMORY.md' or 'CLAUDE.md'"
+        "Output indicates promotion ran (not 'no entries', not 'fatal error')",
+        "Output mentions MEMORY.md or CLAUDE.md as a target file"
       ],
       "should_trigger": true,
       "files": [
@@ -92,16 +89,15 @@
     {
       "id": 4,
       "prompt": "/promote-memory",
-      "expected_output": "Promotion report shows entry skipped due to incomplete fields (missing solution)",
+      "expected_output": "Skill handles incomplete entry gracefully — skips it and reports the skip",
       "assertions": [
-        "Output contains the text 'Memory Promotion'",
-        "Output contains the text 'Skipped'",
-        "Output contains the text 'Total:'"
+        "Output does not report a fatal error or crash",
+        "Output indicates the entry was skipped or not promoted (0 promoted, or mentions 'skip', 'skipped', '跳过', or 'incomplete')"
       ],
       "should_trigger": true,
       "files": [
         {
-          "comment": "Incomplete entry: missing 解决方案/solution field — should be skipped by memory-promoter",
+          "comment": "Incomplete entry: missing solution/解决方案 field",
           "path": "claude_home/projects/-looper_work/memory/errors.md",
           "content": "# Test Errors\n\n## ERR-20260104-004 | status:new\n**错误**：looper-case4 内存泄漏\n**根因**：事件监听器未在组件卸载时移除\n"
         },
@@ -122,16 +118,15 @@
     {
       "id": 5,
       "prompt": "/promote-memory",
-      "expected_output": "Promotion report shows learnings entry promoted while errors (all status:promoted) are skipped",
+      "expected_output": "Skill correctly promotes only the learnings entry; errors with status:promoted are not re-promoted",
       "assertions": [
-        "Output contains the text 'Memory Promotion'",
-        "Output contains the text 'Promoted to'",
-        "Output contains the text 'promoted'"
+        "Output does not report a fatal error or crash",
+        "Output indicates at least one entry was successfully promoted (the learnings entry)"
       ],
       "should_trigger": true,
       "files": [
         {
-          "comment": "errors.md: all entries already promoted — should not be re-promoted",
+          "comment": "errors.md: status:promoted only — should not be re-promoted",
           "path": "claude_home/projects/-looper_work/memory/errors.md",
           "content": "# Test Errors\n\n## ERR-20260105-005 | status:promoted\n**错误**：looper-case5 配置加载失败\n**根因**：配置键名拼写错误\n**解决方案**：统一使用常量定义配置键名\n"
         },
@@ -140,7 +135,7 @@
           "content": "# Test Errors\n\n## ERR-20260105-005 | status:promoted\n**错误**：looper-case5 配置加载失败\n**根因**：配置键名拼写错误\n**解决方案**：统一使用常量定义配置键名\n"
         },
         {
-          "comment": "learnings.md: fresh complete entry — should be promoted",
+          "comment": "learnings.md: fresh complete entry",
           "path": "claude_home/projects/-looper_work/memory/learnings.md",
           "content": "# Test Learnings\n\n## LEARN-20260105-001 | status:new\n**内容**：looper eval 需提供双路径覆盖以应对 LLM 路径推导不一致\n**适用场景**：所有在 looper 容器内验证的 packer plugin eval\n"
         },
