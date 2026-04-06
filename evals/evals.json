@@ -4,11 +4,11 @@
     {
       "id": 1,
       "prompt": "/promote-memory",
-      "expected_output": "Promotion report header appears and shows promoted/skipped counts",
+      "expected_output": "Promotion report shows entries promoted to MEMORY.md and/or CLAUDE.md",
       "assertions": [
         "Output contains the text 'Memory Promotion'",
-        "Output contains the text '已 promote 到'",
-        "Output contains the text '条'"
+        "Output contains the text 'Promoted to'",
+        "Output contains the text 'Total:'"
       ],
       "should_trigger": true,
       "files": [
@@ -33,16 +33,15 @@
     {
       "id": 2,
       "prompt": "/promote-memory",
-      "expected_output": "Shows promotion report for errors.md even though learnings.md is reset to empty",
+      "expected_output": "Promotion report shows errors.md entry promoted; learnings.md is empty so no learnings promoted",
       "assertions": [
         "Output contains the text 'Memory Promotion'",
-        "Output contains the text '条'",
-        "Output contains the text '已 promote 到'"
+        "Output contains the text 'Promoted to'",
+        "Output contains the text 'promoted'"
       ],
       "should_trigger": true,
       "files": [
         {
-          "comment": "Fresh error entry to promote; learnings.md is reset to empty to simulate missing/empty file",
           "path": "claude_home/projects/-looper_work/memory/errors.md",
           "content": "# Test Errors\n\n## ERR-20260102-002 | status:new\n**错误**：looper-case2 数据库连接超时\n**根因**：连接池未设置超时上限\n**解决方案**：设置 pool_timeout=30 并添加重试逻辑\n"
         },
@@ -51,7 +50,7 @@
           "content": "# Test Errors\n\n## ERR-20260102-002 | status:new\n**错误**：looper-case2 数据库连接超时\n**根因**：连接池未设置超时上限\n**解决方案**：设置 pool_timeout=30 并添加重试逻辑\n"
         },
         {
-          "comment": "Reset learnings.md so it does not carry over status:promoted entries from eval 1",
+          "comment": "Reset learnings.md to empty header only",
           "path": "claude_home/projects/-looper_work/memory/learnings.md",
           "content": "# Test Learnings\n"
         },
@@ -64,11 +63,11 @@
     {
       "id": 3,
       "prompt": "/promote-memory",
-      "expected_output": "Promotion report shows non-zero promoted count and mentions target file",
+      "expected_output": "Promotion report shows entry promoted and mentions target memory file path",
       "assertions": [
         "Output contains the text 'Memory Promotion'",
-        "Output contains the text '已 promote 到'",
-        "Output contains text that identifies a target file (MEMORY.md or CLAUDE.md)"
+        "Output contains the text 'Promoted to'",
+        "Output contains the text 'MEMORY.md' or 'CLAUDE.md'"
       ],
       "should_trigger": true,
       "files": [
@@ -81,7 +80,6 @@
           "content": "# Test Errors\n\n## ERR-20260103-003 | status:new\n**错误**：looper-case3 缓存击穿导致服务雪崩\n**根因**：热点 key 过期时并发请求未加互斥锁\n**解决方案**：加分布式锁或使用 singleflight 合并请求\n"
         },
         {
-          "comment": "Reset learnings.md to empty",
           "path": "claude_home/projects/-looper_work/memory/learnings.md",
           "content": "# Test Learnings\n"
         },
@@ -94,16 +92,16 @@
     {
       "id": 4,
       "prompt": "/promote-memory",
-      "expected_output": "Promotion report shows entry skipped due to incomplete fields",
+      "expected_output": "Promotion report shows entry skipped due to incomplete fields (missing solution)",
       "assertions": [
         "Output contains the text 'Memory Promotion'",
-        "Output contains the text '跳过'",
-        "Output contains the text '条'"
+        "Output contains the text 'Skipped'",
+        "Output contains the text 'Total:'"
       ],
       "should_trigger": true,
       "files": [
         {
-          "comment": "Incomplete entry (missing 解决方案 / solution field) — should be skipped",
+          "comment": "Incomplete entry: missing 解决方案/solution field — should be skipped by memory-promoter",
           "path": "claude_home/projects/-looper_work/memory/errors.md",
           "content": "# Test Errors\n\n## ERR-20260104-004 | status:new\n**错误**：looper-case4 内存泄漏\n**根因**：事件监听器未在组件卸载时移除\n"
         },
@@ -112,7 +110,6 @@
           "content": "# Test Errors\n\n## ERR-20260104-004 | status:new\n**错误**：looper-case4 内存泄漏\n**根因**：事件监听器未在组件卸载时移除\n"
         },
         {
-          "comment": "Reset learnings.md to empty",
           "path": "claude_home/projects/-looper_work/memory/learnings.md",
           "content": "# Test Learnings\n"
         },
@@ -125,16 +122,16 @@
     {
       "id": 5,
       "prompt": "/promote-memory",
-      "expected_output": "Promotion report shows new learnings entry promoted while errors are already status:promoted",
+      "expected_output": "Promotion report shows learnings entry promoted while errors (all status:promoted) are skipped",
       "assertions": [
         "Output contains the text 'Memory Promotion'",
-        "Output contains the text '已 promote 到'",
-        "Output contains the text '条'"
+        "Output contains the text 'Promoted to'",
+        "Output contains the text 'promoted'"
       ],
       "should_trigger": true,
       "files": [
         {
-          "comment": "errors.md: all entries already promoted — no new errors to promote",
+          "comment": "errors.md: all entries already promoted — should not be re-promoted",
           "path": "claude_home/projects/-looper_work/memory/errors.md",
           "content": "# Test Errors\n\n## ERR-20260105-005 | status:promoted\n**错误**：looper-case5 配置加载失败\n**根因**：配置键名拼写错误\n**解决方案**：统一使用常量定义配置键名\n"
         },
