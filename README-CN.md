@@ -137,6 +137,18 @@ promote-memory/
 
 ---
 
+## 更新日志
+
+### v1.0.1 (2026-07-10)
+
+| 项目 | 变更 |
+|------|------|
+| `agents/memory-promoter.md` | 补充缺失的 `name: memory-promoter` frontmatter 字段，使 agent 可按名调度 |
+
+完整英文说明见 [README.md](README.md)。
+
+---
+
 ## 许可证
 
 MIT

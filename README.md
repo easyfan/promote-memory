@@ -137,6 +137,16 @@ promote-memory/
 
 ---
 
+## Changelog
+
+### v1.0.1 (2026-07-10)
+
+| Item | Change |
+|------|--------|
+| `agents/memory-promoter.md` | Added missing `name: memory-promoter` frontmatter field so the agent is addressable by name at dispatch time |
+
+---
+
 ## License
 
 MIT
